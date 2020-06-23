@@ -4,6 +4,7 @@ import os
 import discord
 from dotenv import load_dotenv
 from discord.ext import commands
+from add import add_movie
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -22,7 +23,11 @@ async def poll(ctx, num_minutes: int=60):
 
 @bot.command(name='add', help='Add movie to the watch list. IMDB link only.')
 async def add(ctx, link: str):
-    response = "Movie will be added to the list."
+    if "imdb.com" in link:
+        add_movie(link, ctx.author.name)
+        response = "Movie was added to the list."
+    else:
+        response = "Please provide valid IMDB link."
     await ctx.send(response)
 
 @bot.command(name='list', help='Current unwatched movies')
