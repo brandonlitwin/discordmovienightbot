@@ -6,7 +6,12 @@ from discord.ext import commands
 import config
 
 
-def check_movie_in_list(imdb_id):
+def check_movie_in_list(imdb_id, viewed):
+  print(imdb_id)
+  print(config.collection.find_one({"imdbID": imdb_id, "viewed": viewed}))
+  return config.collection.find_one({"imdbID": imdb_id, "viewed": viewed})
+
+def check_movie_in_any_list(imdb_id):
   print(imdb_id)
   print(config.collection.find_one({"imdbID": imdb_id}))
   return config.collection.find_one({"imdbID": imdb_id})
