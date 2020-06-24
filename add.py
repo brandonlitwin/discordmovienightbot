@@ -1,3 +1,4 @@
+#add.py
 import os
 import discord
 import requests
@@ -21,8 +22,12 @@ cluster = MongoClient(CONNECTION_STRING)
 db = cluster["MovieNightBot"]
 collection = db["movies"]
 
-def add_movie(imdb_link, submitter):
-  imdb_id = imdb_link.split("title/")[1].split("/")[0]
+def check_movie_already_added(imdb_id):
+  print(imdb_id)
+  print(collection.find_one({"imdbID": imdb_id}))
+  return collection.find_one({"imdbID": imdb_id})
+
+def add_movie(imdb_id, submitter):
   data = search_omdb(imdb_id)
   print(data['Ratings'][1]['Value'])
   if data:
