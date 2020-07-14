@@ -11,7 +11,7 @@ from poll import create_poll
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='>')
+bot = commands.Bot(command_prefix='--')
 
 @bot.command(name='poll', help='Select 10 random movies and create a poll. Default time 60 min, max 1440')
 async def poll(ctx, num_minutes: int=60):
