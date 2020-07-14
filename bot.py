@@ -22,11 +22,12 @@ async def poll(ctx, num_minutes: int=60):
     else:
         response = f'Setting a poll for {num_minutes} minutes'
 
+    response += "\n @here poll is starting"
     await ctx.send(response)
 
     response = create_poll(num_minutes)
 
-    await ctx.send(response)
+    await ctx.send("```" + response + "```")
 
 @bot.command(name='add', help='Add movie to the watch list. IMDB link only.')
 async def add(ctx, link: str):

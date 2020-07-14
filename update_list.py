@@ -18,12 +18,17 @@ def check_movie_in_any_list(imdb_id):
 
 def add_movie(imdb_id, submitter):
   data = search_omdb(imdb_id)
-  print(data['Ratings'][1]['Value'])
+  # try to get RT rating
+  try:
+    rating = data['Ratings'][1]['Value']
+  except IndexError:
+    rating = "n/a"
+
   if data:
     post = {"imdbID": imdb_id,
             "title": data['Title'],
             "year": data['Year'],
-            "rtScore": data['Ratings'][1]['Value'],
+            "rtScore": rating,
             "runtime": data['Runtime'],
             "plot": data['Plot'],
             "submitter": submitter,
