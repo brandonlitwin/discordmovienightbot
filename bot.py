@@ -6,11 +6,12 @@ from discord.ext import commands
 from update_list import add_movie, check_movie_in_list, check_movie_in_any_list, remove_movie
 from show_list import show_list
 from set_viewed import set_viewed
+from poll import create_poll
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='!movie')
+bot = commands.Bot(command_prefix='>')
 
 @bot.command(name='poll', help='Select 10 random movies and create a poll. Default time 60 min, max 1440')
 async def poll(ctx, num_minutes: int=60):
@@ -20,6 +21,11 @@ async def poll(ctx, num_minutes: int=60):
         response = f'Setting a poll for {num_minutes} minute'
     else:
         response = f'Setting a poll for {num_minutes} minutes'
+
+    await ctx.send(response)
+
+    response = create_poll(num_minutes)
+
     await ctx.send(response)
 
 @bot.command(name='add', help='Add movie to the watch list. IMDB link only.')
@@ -41,7 +47,7 @@ async def list(ctx):
     movie_list = ""
     for movie in response:
         movie_list = movie_list + movie['title'] + " (" + movie['year'] + "), submitted by @" + movie['submitter'] + "\n"
-    await ctx.send("Unviewed Movies \n" + movie_list)
+    await ctx.send("```" + "Unviewed Movies \n" + movie_list + "```")
 
 @bot.command(name='viewedlist', help='Current watched movies.')
 async def viewedlist(ctx):
@@ -53,7 +59,7 @@ async def viewedlist(ctx):
     if movie_list == "":
         await ctx.send("No movies have been viewed yet.")
     else:
-        await ctx.send("Viewed Movies \n" + movie_list)
+        await ctx.send("```" + "Viewed Movies \n" + movie_list + "```")
 
 @bot.command(name='setviewed', help='Put movie in viewed list. IMDB link only')
 async def setviewed(ctx, link):
