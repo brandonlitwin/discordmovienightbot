@@ -21,7 +21,7 @@ def create_poll(num_minutes):
         poll_list = random.sample(unviewed_movies, k=10)
 
     for index, movie in enumerate(poll_list, start=1):
-        current_movie_str = str(index) + " " + movie
+        current_movie_str = str(index) + ") " + movie
         poll_list_with_indexes.append(current_movie_str)
 
     poll_list_str = ""
