@@ -22,5 +22,3 @@ def create_poll(num_minutes):
         poll_list_str += movie + "\n"
 
     return poll_list_str
-    for x in y:
-        asdasd
