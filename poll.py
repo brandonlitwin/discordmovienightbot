@@ -6,9 +6,9 @@ import random
 def create_poll(num_minutes):
     unviewed_movies = []
     for post in config.collection.find({"viewed": False}):
-        current_movie_str = str(post['title']) + " (https://imdb.com/title/"
-        + str(post['imdbID']) + "), submitted by @" + str(post['submitter'])
-        + "\n"
+        current_movie_str = str(post['title']) + \
+         " (https://imdb.com/title/" + str(post['imdbID']) + \
+         "), submitted by @" + str(post['submitter']) + "\n"
         unviewed_movies.append(current_movie_str)
 
     poll_list = unviewed_movies
