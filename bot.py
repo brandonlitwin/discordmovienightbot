@@ -15,7 +15,7 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(command_prefix='--')
 
 
-@bot.command(name='poll', help='Select 10 random movies and create a poll.' +
+@bot.command(name='poll', help='Select 10 random movies and create a poll. ' +
              'Default time 60 min, max 1440')
 async def poll(ctx, num_minutes: int = 60):
     if num_minutes > 1440:
@@ -26,7 +26,7 @@ async def poll(ctx, num_minutes: int = 60):
         response = f'Setting a poll for {num_minutes} minutes'
 
     # send initial message
-    response += "\n @here poll is starting"
+    response += "\n @everyone poll is starting"
     await ctx.send(response)
 
     # get all the movies of the poll
@@ -34,12 +34,12 @@ async def poll(ctx, num_minutes: int = 60):
 
     # send poll
     message = await ctx.send("```" + response + "```")
-    emojis = ['1\u20E3', '2\u20E3', '3\u20E3', '4\u20E3', '5\u20E3',
+    """emojis = ['1\u20E3', '2\u20E3', '3\u20E3', '4\u20E3', '5\u20E3',
               '6\u20E3', '7\u20E3', '8\u20E3', '9\u20E3', '\U0001f51f']
 
     # add emojis
     for emoji in emojis:
-        await message.add_reaction(emoji)
+        await message.add_reaction(emoji)"""
 
 
 @bot.command(name='add', help='Add movie to the watch list. IMDB link only.')
