@@ -1,6 +1,7 @@
 # bot.py
 import os
 import discord
+import asyncio
 from dotenv import load_dotenv
 from discord.ext import commands
 from update_list import add_movie, check_movie_in_list
@@ -40,6 +41,25 @@ async def poll(ctx, num_minutes: int = 60):
 
     # send poll
     message = await ctx.send("```" + response + "```")
+
+    # send results on poll end
+    poll_time_seconds = num_minutes * 60
+    print(poll_time_seconds)
+    await asyncio.sleep(poll_time_seconds)
+
+    print("poll is done")
+
+    # get max value
+    new_dict = {}
+    for key, val in current_poll_dict.items():
+        new_dict[val['title']] = val['votes']
+    most_votes = max(new_dict.values())
+    winner = max(new_dict, key=new_dict.get)
+
+    poll_results = "Poll is now completed \n" + f"Winner is {winner}" + \
+        f" with {most_votes} votes!"
+
+    await ctx.send("```" + poll_results + "```")
     """emojis = ['1\u20E3', '2\u20E3', '3\u20E3', '4\u20E3', '5\u20E3',
               '6\u20E3', '7\u20E3', '8\u20E3', '9\u20E3', '\U0001f51f']
 
