@@ -8,7 +8,7 @@ from update_list import add_movie, check_movie_in_list
 from update_list import check_movie_in_any_list, remove_movie
 from show_list import show_list
 from set_viewed import set_viewed
-from poll import create_poll, poll_to_dict
+from poll import create_poll, poll_to_dict, tiebreak
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -52,20 +52,56 @@ async def poll(ctx, num_minutes: int = 60):
     await asyncio.sleep(poll_time_seconds)
 
     print("poll is done")
+    poll_running = False
 
     # get max value
-    new_dict = {}
+    reformatted_dict = {}
     for key, val in current_poll_dict.items():
-        new_dict[val['title']] = val['votes']
-    most_votes = max(new_dict.values())
-    winner = max(new_dict, key=new_dict.get)
+        reformatted_dict[val['title']] = val['votes']
+    most_votes = max(reformatted_dict.values())
+    keys = [key for key, value in reformatted_dict.items() if value == most_votes]
+    import random
+    if len(keys) > 1:
+        emojis = ['1\u20E3', '2\u20E3', '3\u20E3', '4\u20E3', '5\u20E3',
+                  '6\u20E3', '7\u20E3', '8\u20E3', '9\u20E3', '\U0001f51f']
+        emojis = emojis[:len(keys)]
+        # add emojis
+        tiebreak_message = f"There was a tie of {most_votes} votes between {len(keys)} movies \n" + \
+            "@everyone Please vote for the tiebreaker. You have 5 minutes. \n" + \
+            "and if you tie again, I'll pick one myself :)"
 
-    poll_results = "Poll is now completed \n" + f"Winner is {winner}" + \
+        # Create tiebreak poll
+        await ctx.send(tiebreak_message)
+        tiebreak_poll = tiebreak(keys)
+        tiebreak_poll_message = await ctx.send("```" + tiebreak_poll + "```")
+        tiebreak_poll_message_id = tiebreak_poll_message.id
+        for emoji in emojis:
+            await tiebreak_poll_message.add_reaction(emoji)
+        await asyncio.sleep(300)
+        tiebreak_poll_message = await ctx.fetch_message(tiebreak_poll_message_id)
+        # Count tiebreak reactions
+        tiebreak_reactions = {}
+        for reaction in tiebreak_poll_message.reactions:
+            tiebreak_reactions[reaction.emoji] = reaction.count
+        print(tiebreak_reactions)
+        most_votes = max(tiebreak_reactions.values())
+        tiebreak_keys = [key for key, value in tiebreak_reactions.items() if value == most_votes]
+        # Tied again, just pick a random from the tiebreak poll
+        if len(tiebreak_keys) > 1:
+            winner = random.choice(keys)
+            poll_results = "Tiebreak is now completed \n" + \
+                f"There was another tie zzz \n" + \
+                f"Since you can't decide, I've decided that the winner is {winner}"
+        else:
+            winner = keys[emojis.index(tiebreak_keys[0])]
+            poll_results = f"Tie is broken, and the winner is {winner}!"
+
+    else:
+        winner = keys[0]
+        poll_results = "Poll is now completed \n" + f"Winner is {winner}" + \
         f" with {most_votes} votes!"
 
     await ctx.send("```" + poll_results + "```")
-
-    poll_running = False
 
 
 @bot.command(name='vote', help='Cast your votes in order from first to third' +

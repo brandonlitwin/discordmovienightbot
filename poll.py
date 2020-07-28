@@ -32,6 +32,18 @@ def create_poll(num_minutes):
     return poll_list_str
 
 
+def tiebreak(movies):
+    poll_list_with_indexes = []
+    for index, movie in enumerate(movies, start=1):
+        current_movie_str = str(index) + ") " + movie
+        poll_list_with_indexes.append(current_movie_str)
+    poll_list_str = ""
+    for movie in poll_list_with_indexes:
+        poll_list_str += movie + "\n"
+
+    return poll_list_str
+
+
 def poll_to_dict(poll_str):
     poll_dict = {}
     movie_list = list(filter(bool, poll_str.splitlines()))
