@@ -19,11 +19,14 @@ current_poll_dict = {}
 
 poll_running = False
 
+users_who_voted = []
+
 
 @bot.command(name='poll', help='Select 10 random movies and create a poll. ' +
              'Default time 60 min, max 1440')
 async def poll(ctx, num_minutes: int = 60):
     global poll_running
+    global users_who_voted
     poll_running = True
     if num_minutes > 1440:
         num_minutes = 1440
@@ -53,6 +56,7 @@ async def poll(ctx, num_minutes: int = 60):
 
     print("poll is done")
     poll_running = False
+    users_who_voted.clear()
 
     # get max value
     reformatted_dict = {}
@@ -109,6 +113,8 @@ async def poll(ctx, num_minutes: int = 60):
 async def vote(ctx, first_pick: str, second_pick: str, third_pick: str):
     if not poll_running:
         response = "There is no poll active, sorry!"
+    elif ctx.author.name in users_who_voted:
+        response = f"You have already voted in this poll, @{ctx.author.name}."
     else:
         max_poll_id = len(current_poll_dict) + 1
         if (first_pick == second_pick or first_pick == third_pick or
@@ -121,6 +127,10 @@ async def vote(ctx, first_pick: str, second_pick: str, third_pick: str):
         else:
             try:
                 response = f'Thank you for the vote @{ctx.author.name}.'
+
+                print(ctx.author.name)
+                users_who_voted.append(ctx.author.name)
+                print(users_who_voted)
 
                 first_pick_current_votes = int(
                     current_poll_dict[first_pick]['votes'])
