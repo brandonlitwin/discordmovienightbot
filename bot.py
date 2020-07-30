@@ -157,12 +157,32 @@ async def add(ctx, link: str):
     if "imdb.com" in link:
         imdb_id = link.split("title/")[1].split("/")[0]
         if check_movie_in_list(imdb_id, viewed=False) is None:
-            add_movie(imdb_id, ctx.author.name)
-            response = "Movie was added to the list."
+            if add_movie(imdb_id, ctx.author.name):
+                response = f"{link} was added to the list."
+            else:
+                response = f"{link} could not be added, double check the URL."
         else:
-            response = "Movie is already in the list."
+            response = f"{link} is already in the list."
     else:
-        response = "Please provide valid IMDB link."
+        response = f"Could not recognize {link} as valid IMDB link."
+    await ctx.send(response)
+
+
+@bot.command(name='bulkadd', help='Add group of movies. IMDB links only.')
+async def bulkadd(ctx, *links):
+    response = ""
+    for link in links:
+        if "imdb.com" in link:
+            imdb_id = link.split("title/")[1].split("/")[0]
+            if check_movie_in_list(imdb_id, viewed=False) is None:
+                if add_movie(imdb_id, ctx.author.name):
+                    response += f"{link} was added to the list.\n"
+                else:
+                    response += f"{link} could not be added, double check the URL.\n"
+            else:
+                response += f"{link} is already in the list.\n"
+        else:
+            response += f"Could not recognize {link} as valid IMDB link.\n"
     await ctx.send(response)
 
 

@@ -20,13 +20,15 @@ def check_movie_in_any_list(imdb_id):
 
 def add_movie(imdb_id, submitter):
     data = search_omdb(imdb_id)
-    # try to get RT rating
-    try:
-        rating = data['Ratings'][1]['Value']
-    except IndexError:
-        rating = "n/a"
+    print(data)
 
     if data:
+        # try to get RT rating
+        print("data was found for movie")
+        try:
+            rating = data['Ratings'][1]['Value']
+        except IndexError:
+            rating = "n/a"
         post = {"imdbID": imdb_id,
                 "title": data['Title'],
                 "year": data['Year'],
@@ -36,7 +38,10 @@ def add_movie(imdb_id, submitter):
                 "submitter": submitter,
                 "viewed": False,
                 "viewedDate": None}
-    config.collection.insert_one(post)
+        config.collection.insert_one(post)
+        return True
+    else:
+        return False
 
 
 def remove_movie(imdb_id):
@@ -47,6 +52,7 @@ def search_omdb(imdb_id):
     url = config.REQUEST_URL + imdb_id + config.API_KEY
     r = requests.get(url=url)
     data = r.json()
-    print(data['Title'])
-    print(data['Year'])
-    return data
+    if data['Response'] == 'False':
+        return False
+    else:
+        return data
