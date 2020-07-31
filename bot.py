@@ -1,4 +1,6 @@
 # bot.py
+import config
+import datetime
 import os
 import discord
 import asyncio
@@ -20,6 +22,13 @@ current_poll_dict = {}
 poll_running = False
 
 users_who_voted = []
+
+
+@bot.command(name='toggleautoview', help='Toggle autoview of movies after poll is done.')
+async def toggleautoview(ctx):
+    config.autoview = not config.autoview
+    response = f"Autoview has been set to {config.autoview}"
+    await ctx.send("```" + response + "```")
 
 
 @bot.command(name='poll', help='Select 10 random movies and create a poll. ' +
@@ -104,6 +113,10 @@ async def poll(ctx, num_minutes: int = 60):
         winner = keys[0]
         poll_results = "Poll is now completed \n" + f"Winner is {winner}" + \
         f" with {most_votes} votes!"
+
+    # if autoview on, set winner to viewed
+    if config.autoview:
+        config.collection.find_one_and_update({"title": winner}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})
 
     await ctx.send("```" + poll_results + "```")
 
