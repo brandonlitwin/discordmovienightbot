@@ -90,7 +90,7 @@ async def poll(ctx, num_minutes: int = 60):
         tiebreak_poll_message_id = tiebreak_poll_message.id
         for emoji in emojis:
             await tiebreak_poll_message.add_reaction(emoji)
-        await asyncio.sleep(300)
+        await asyncio.sleep(config.tiebreak_num_seconds)
         tiebreak_poll_message = await ctx.fetch_message(tiebreak_poll_message_id)
         # Count tiebreak reactions
         tiebreak_reactions = {}
@@ -119,6 +119,12 @@ async def poll(ctx, num_minutes: int = 60):
         config.collection.find_one_and_update({"title": winner}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})
 
     await ctx.send("```" + poll_results + "```")
+
+
+@bot.command(name='schedule', help='Schedule poll')
+async def schedule(ctx, datetime: str):
+    message = "Poll is scheduled for "
+    await ctx.send("```" + message + "```")
 
 
 @bot.command(name='vote', help='Cast your votes in order from first to third' +

@@ -17,3 +17,4 @@ cluster = MongoClient(CONNECTION_STRING)
 db = cluster["MovieNightBot"]
 collection = db["movies"]
 autoview = True
+tiebreak_num_seconds = 300
