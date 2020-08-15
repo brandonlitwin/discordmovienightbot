@@ -31,7 +31,7 @@ def check_movie_title_in_any_list(title):
 
 
 def add_movie_id(imdb_id, submitter):
-    data = search_omdb(imdb_id)
+    data = search_omdb_id(imdb_id)
     print(data)
 
     if data:
