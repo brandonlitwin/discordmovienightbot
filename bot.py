@@ -6,8 +6,11 @@ import discord
 import asyncio
 from dotenv import load_dotenv
 from discord.ext import commands
-from update_list import add_movie, check_movie_in_list
-from update_list import check_movie_in_any_list, remove_movie
+from update_list import add_movie_id, check_movie_id_in_list
+from update_list import check_movie_id_in_any_list, remove_movie_id
+from update_list import add_movie_title, check_movie_title_in_list
+from update_list import check_movie_title_in_any_list, remove_movie_title
+from update_list import search_movie_title
 from show_list import show_list
 from set_viewed import set_viewed
 from poll import create_poll, poll_to_dict, tiebreak
@@ -171,37 +174,74 @@ async def vote(ctx, first_pick: str, second_pick: str, third_pick: str):
     print(current_poll_dict)
 
 
-@bot.command(name='add', help='Add movie to the watch list. IMDB link only.')
-async def add(ctx, link: str):
-    if "imdb.com" in link:
-        imdb_id = link.split("title/")[1].split("/")[0]
-        if check_movie_in_list(imdb_id, viewed=False) is None:
-            if add_movie(imdb_id, ctx.author.name):
-                response = f"{link} was added to the list."
+@bot.command(name='add', help='Add movie to the watch list. IMDB link or title accepted.')
+async def add(ctx, movie: str):
+    if "imdb.com" in movie:
+        imdb_id = movie.split("title/")[1].split("/")[0]
+        if check_movie_id_in_list(imdb_id, viewed=False) is None:
+            if add_movie_id(imdb_id, ctx.author.name):
+                response = f"{movie} was added to the list."
             else:
-                response = f"{link} could not be added, double check the URL."
+                response = f"{movie} could not be added, double check the URL."
         else:
-            response = f"{link} is already in the list."
+            response = f"{movie} is already in the list."
     else:
-        response = f"Could not recognize {link} as valid IMDB link."
+        # response = f"Could not recognize {link} as valid IMDB link."
+        # add by title
+        if check_movie_title_in_list(movie, viewed=False) is None:
+            found_link = search_movie_title(movie)
+            if found_link:
+                response = "Is this what you want to add?\n" + found_link
+                message = await ctx.send(response)
+                message_id = message.id
+                emojis = ['\U00002705', '\U0000274c']
+                for emoji in emojis:
+                    await message.add_reaction(emoji)
+                await asyncio.sleep(30)
+                # Count reactions
+                message = await ctx.fetch_message(message_id)
+                reactions = {}
+                for reaction in message.reactions:
+                    reactions[reaction.emoji] = reaction.count
+                print(reactions)
+                if reactions['\U00002705'] > reactions['\U0000274c']:
+                    # Add movie as it was accepted by user
+                    if add_movie_title(movie, ctx.author.name):
+                        response = f"{movie} was added to the list."
+                    else:
+                        response = "Movie could not be added. Please try again."
+                else:
+                    response = "Movie will not be added. Try another movie or try adding an IMDB link."
+            else:
+                response = f"{movie} could not be added. Double check the title or try adding an IMDB link."
+        else:
+            response = f"{movie} is already in the list."
     await ctx.send(response)
 
 
-@bot.command(name='bulkadd', help='Add group of movies. IMDB links only.')
-async def bulkadd(ctx, *links):
+@bot.command(name='bulkadd', help='Add group of movies. IMDB links or titles accepted.')
+async def bulkadd(ctx, *movies):
     response = ""
-    for link in links:
-        if "imdb.com" in link:
-            imdb_id = link.split("title/")[1].split("/")[0]
-            if check_movie_in_list(imdb_id, viewed=False) is None:
-                if add_movie(imdb_id, ctx.author.name):
+    for movie in movies:
+        if "imdb.com" in movie:
+            imdb_id = movie.split("title/")[1].split("/")[0]
+            if check_movie_id_in_list(imdb_id, viewed=False) is None:
+                if add_movie_id(imdb_id, ctx.author.name):
                     response += f"{link} was added to the list.\n"
                 else:
                     response += f"{link} could not be added, double check the URL.\n"
             else:
                 response += f"{link} is already in the list.\n"
         else:
-            response += f"Could not recognize {link} as valid IMDB link.\n"
+            # response = f"Could not recognize {link} as valid IMDB link."
+            # add by title
+            if check_movie_title_in_list(movie, viewed=False) is None:
+                if add_movie_title(movie, ctx.author.name):
+                    response += f"{movie} was added to the list.\n"
+                else:
+                    response += f"{movie} could not be added. Double check the title or try adding an IMDB link.\n"
+            else:
+                response += f"{movie} is already in the list.\n"
     await ctx.send(response)
 
 
