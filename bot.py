@@ -12,7 +12,7 @@ from update_list import add_movie_title, check_movie_title_in_list
 from update_list import check_movie_title_in_any_list, remove_movie_title
 from update_list import search_movie_title
 from show_list import show_list
-from set_viewed import set_viewed
+from set_viewed import set_viewed_by_id, set_viewed_by_title
 from poll import create_poll, poll_to_dict, tiebreak
 
 load_dotenv()
@@ -176,7 +176,6 @@ async def vote(ctx, first_pick: str, second_pick: str, third_pick: str):
 
 @bot.command(name='add', help='Add movie to the watch list. IMDB link or title accepted. Title must be in quotes.')
 async def add(ctx, movie: str):
-    print(movie)
     if "imdb.com" in movie:
         imdb_id = movie.split("title/")[1].split("/")[0]
         if check_movie_id_in_list(imdb_id, viewed=False) is None:
@@ -271,19 +270,27 @@ async def viewedlist(ctx):
         await ctx.send("```" + "Viewed Movies \n" + movie_list + "```")
 
 
-@bot.command(name='setviewed', help='Put movie in viewed list. IMDB link only')
-async def setviewed(ctx, link):
-    if "imdb.com" in link:
-        imdb_id = link.split("title/")[1].split("/")[0]
-        if check_movie_in_any_list(imdb_id) is None:
+@bot.command(name='setviewed', help='Put movie in viewed list. IMDB links or titles accepted. Title must be in quotes.')
+async def setviewed(ctx, movie):
+    if "imdb.com" in movie:
+        imdb_id = movie.split("title/")[1].split("/")[0]
+        if check_movie_id_in_any_list(imdb_id) is None:
             response = "Can't set movie to viewed, not in watchlist."
-        elif check_movie_in_list(imdb_id, viewed=True) is None:
-            set_viewed(imdb_id)
+        elif check_movie_id_in_list(imdb_id, viewed=True) is None:
+            set_viewed_by_id(imdb_id)
             response = "Movie was added to the viewed list."
         else:
             response = "Movie is already in viewed list."
     else:
-        response = "Please provide valid IMDB link."
+        # Set viewed by title
+        if check_movie_title_in_any_list(movie) is None:
+            response = "Can't set movie to viewed. If it is in the unviewed list, try checking spelling with exact quotes or try IMDB link."
+        elif check_movie_title_in_list(movie, viewed=True) is None:
+            set_viewed_by_title(movie)
+            response = "Movie was added to the viewed list."
+        else:
+            response = "Movie is already in viewed list."
+
     await ctx.send(response)
 
 
@@ -298,7 +305,6 @@ async def remove(ctx, movie: str):
             response = "Movie could not be removed. IMDB id was not found in the list."
     else:
         # Remove by title
-        print(movie)
         if check_movie_title_in_list(movie, viewed=False):
             remove_movie_title(movie)
             response = "Movie was removed from the list."

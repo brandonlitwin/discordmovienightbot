@@ -7,5 +7,9 @@ import config
 import datetime
 
 
-def set_viewed(imdb_id):
+def set_viewed_by_id(imdb_id):
     return config.collection.find_one_and_update({"imdbID": imdb_id}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})
+
+
+def set_viewed_by_title(title):
+    return config.collection.find_one_and_update({"title": title}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})
