@@ -3,3 +3,4 @@ python-dotenv
 pymongo
 dnspython
 requests
+python-dateutil

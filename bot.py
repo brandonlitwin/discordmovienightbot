@@ -1,11 +1,12 @@
 # bot.py
 import config
 import datetime
+from datetime import datetime
 import os
 import discord
 import asyncio
 from dotenv import load_dotenv
-from discord.ext import commands
+from discord.ext import commands, tasks
 from update_list import add_movie_id, check_movie_id_in_list
 from update_list import check_movie_id_in_any_list, remove_movie_id
 from update_list import add_movie_title, check_movie_title_in_list
@@ -16,9 +17,21 @@ from set_viewed import set_viewed_by_id, set_viewed_by_title
 from poll import create_poll, poll_to_dict, tiebreak
 
 load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
+
+client = discord.Client()
 
 bot = commands.Bot(command_prefix='--')
+
+"""server = client.get_guild(config.SERVER)
+print(server)
+channel = client.get_channel(config.CHANNEL)
+print(channel)
+print(bot.get_all_channels())
+print(client.get_all_channels())
+
+for guild in client.guilds:
+
+    print(guild)"""
 
 current_poll_dict = {}
 
@@ -34,14 +47,116 @@ async def toggleautoview(ctx):
     await ctx.send("```" + response + "```")
 
 
-@bot.command(name='poll', help='Select 10 random movies and create a poll. ' +
-             'Default time 60 min, max 1440')
-async def poll(ctx, num_minutes: int = 60):
+@tasks.loop(hours=168.0)
+async def autopoll():
+    print('in loop')
+    #print(config.autopoll_schedule, datetime.now().replace(microsecond=0))
+    #if datetime.now().replace(microsecond=0) >= config.autopoll_schedule:
+    print('running autopoll')
+    channel = bot.get_channel(int(config.CHANNEL))
+    #await channel.send('--poll')
     global poll_running
     global users_who_voted
     poll_running = True
-    if num_minutes > 1440:
-        num_minutes = 1440
+    num_minutes = 1440
+    ctx = channel
+    response = f'Setting a poll for {num_minutes} minutes'
+
+    # send initial message
+    response += "\n @everyone poll is starting, use vote command to vote"
+    await ctx.send(response)
+
+    # get all the movies of the poll
+    response = create_poll(num_minutes)
+
+    # call function to convert str to dict
+    global current_poll_dict
+    current_poll_dict = poll_to_dict(response)
+
+    # send poll
+    message = await ctx.send("```" + response + "```")
+
+    # send results on poll end
+    poll_time_seconds = num_minutes * 60
+    print(poll_time_seconds)
+    await asyncio.sleep(poll_time_seconds)
+
+    print("poll is done")
+    poll_running = False
+    users_who_voted.clear()
+
+    # get max value
+    reformatted_dict = {}
+    for key, val in current_poll_dict.items():
+        reformatted_dict[val['title']] = val['votes']
+    most_votes = max(reformatted_dict.values())
+    keys = [key for key, value in reformatted_dict.items() if value == most_votes]
+    import random
+    if len(keys) > 1:
+        emojis = ['1\u20E3', '2\u20E3', '3\u20E3', '4\u20E3', '5\u20E3',
+                '6\u20E3', '7\u20E3', '8\u20E3', '9\u20E3', '\U0001f51f']
+        emojis = emojis[:len(keys)]
+        # add emojis
+        tiebreak_message = f"There was a tie of {most_votes} votes between {len(keys)} movies \n" + \
+            "@everyone Please vote for the tiebreaker. You have 5 minutes. \n" + \
+            "and if you tie again, I'll pick one myself :)"
+
+        # Create tiebreak poll
+        await ctx.send(tiebreak_message)
+        tiebreak_poll = tiebreak(keys)
+        tiebreak_poll_message = await ctx.send("```" + tiebreak_poll + "```")
+        tiebreak_poll_message_id = tiebreak_poll_message.id
+        for emoji in emojis:
+            await tiebreak_poll_message.add_reaction(emoji)
+        await asyncio.sleep(config.tiebreak_num_seconds)
+        tiebreak_poll_message = await ctx.fetch_message(tiebreak_poll_message_id)
+        # Count tiebreak reactions
+        tiebreak_reactions = {}
+        for reaction in tiebreak_poll_message.reactions:
+            tiebreak_reactions[reaction.emoji] = reaction.count
+        print(tiebreak_reactions)
+        most_votes = max(tiebreak_reactions.values())
+        tiebreak_keys = [key for key, value in tiebreak_reactions.items() if value == most_votes]
+        # Tied again, just pick a random from the tiebreak poll
+        if len(tiebreak_keys) > 1:
+            winner = random.choice(keys)
+            poll_results = "Tiebreak is now completed \n" + \
+                f"There was another tie zzz \n" + \
+                f"Since you can't decide, I've decided that the winner is {winner}"
+        else:
+            winner = keys[emojis.index(tiebreak_keys[0])]
+            poll_results = f"Tie is broken, and the winner is {winner}!"
+
+    else:
+        winner = keys[0]
+        poll_results = "Poll is now completed \n" + f"Winner is {winner}" + \
+        f" with {most_votes} votes!"
+
+    # if autoview on, set winner to viewed
+    if config.autoview:
+        config.collection.find_one_and_update({"title": winner}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})
+
+    await ctx.send("```" + poll_results + "```")
+
+
+@autopoll.before_loop
+async def wait_to_start_autopoll():
+    print('before loop')
+    print(config.autopoll_schedule, datetime.now().replace(microsecond=0))
+    print(datetime.now().replace(microsecond=0) >= config.autopoll_schedule)
+    time_diff = config.autopoll_schedule - datetime.now().replace(microsecond=0)
+    print(time_diff.total_seconds())
+    if time_diff.total_seconds() > 0:
+        await asyncio.sleep(time_diff.total_seconds())
+
+
+@bot.command(name='poll', help='Select 10 random movies and create a poll. ' +
+             'Default time 1440 min (24 hours)')
+async def poll(ctx, num_minutes: int = 1440):
+    print('starting poll')
+    global poll_running
+    global users_who_voted
+    poll_running = True
     if num_minutes == 1:
         response = f'Setting a poll for {num_minutes} minute'
     else:
@@ -125,9 +240,15 @@ async def poll(ctx, num_minutes: int = 60):
 
 
 @bot.command(name='schedule', help='Schedule poll')
-async def schedule(ctx, datetime: str):
-    message = "Poll is scheduled for "
+async def schedule(ctx, datetime_str: str):
+    from dateutil.parser import parse
+    datetime = parse(datetime_str)
+    message = f"Poll is scheduled for {datetime}"
     await ctx.send("```" + message + "```")
+    config.autopoll_schedule = datetime
+    print(config.autopoll_schedule)
+    print('autopoll start')
+    autopoll.start()
 
 
 @bot.command(name='vote', help='Cast your votes in order from first to third' +
@@ -196,7 +317,7 @@ async def add(ctx, movie: str):
                 emojis = ['\U00002705', '\U0000274c']
                 for emoji in emojis:
                     await message.add_reaction(emoji)
-                await asyncio.sleep(30)
+                await asyncio.sleep(20)
                 # Count reactions
                 message = await ctx.fetch_message(message_id)
                 reactions = {}
@@ -312,4 +433,4 @@ async def remove(ctx, movie: str):
             response = "Movie could not be removed. Double check the title in the list."
     await ctx.send(response)
 
-bot.run(TOKEN)
+bot.run(config.TOKEN)
