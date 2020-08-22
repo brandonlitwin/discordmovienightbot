@@ -50,11 +50,8 @@ async def toggleautoview(ctx):
 @tasks.loop(hours=168.0)
 async def autopoll():
     print('in loop')
-    #print(config.autopoll_schedule, datetime.now().replace(microsecond=0))
-    #if datetime.now().replace(microsecond=0) >= config.autopoll_schedule:
     print('running autopoll')
     channel = bot.get_channel(int(config.CHANNEL))
-    #await channel.send('--poll')
     global poll_running
     global users_who_voted
     poll_running = True
