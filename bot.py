@@ -254,7 +254,7 @@ async def vote(ctx, *picks):
     if not poll_running:
         response = "There is no poll active, sorry!"
     elif ctx.author.name in users_who_voted:
-        response = f"You have already voted in this poll, @{ctx.author.name}."
+        response = f"You have already voted in this poll, @{ctx.author.mention}."
     else:
         max_poll_id = len(current_poll_dict) + 1
         actual_picks = []
@@ -276,11 +276,11 @@ async def vote(ctx, *picks):
                     third_pick = actual_picks[2]
                     current_poll_dict[third_pick]['votes'] = int(current_poll_dict[third_pick]['votes']) + 1
 
-            response = f'Thank you for the vote @{ctx.author.name}.'
+            response = f'Thank you for the vote {ctx.author.mention}.'
             users_who_voted.append(ctx.author.name)
             print(users_who_voted)
         else:
-            response = f"Could not read any picks. Please try again, @{ctx.author.name}."
+            response = f"Could not read any picks. Please try again, @{ctx.author.mention}."
 
     await ctx.send(response)
     print(current_poll_dict)
