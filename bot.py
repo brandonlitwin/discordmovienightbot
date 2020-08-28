@@ -328,11 +328,11 @@ async def bulkadd(ctx, *movies):
             imdb_id = movie.split("title/")[1].split("/")[0]
             if check_movie_id_in_list(imdb_id, viewed=False) is None:
                 if add_movie_id(imdb_id, ctx.author.name):
-                    response += f"{link} was added to the list.\n"
+                    response += f"{movie} was added to the list.\n"
                 else:
-                    response += f"{link} could not be added, double check the URL.\n"
+                    response += f"{movie} could not be added, double check the URL.\n"
             else:
-                response += f"{link} is already in the list.\n"
+                response += f"{movie} is already in the list.\n"
         else:
             # add by title
             if check_movie_title_in_list(movie, viewed=False) is None:
