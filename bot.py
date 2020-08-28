@@ -348,12 +348,24 @@ async def bulkadd(ctx, *movies):
 @bot.command(name='list', help='Current unwatched movies.')
 async def list(ctx):
     response = show_list(viewed=False)
+    movie_list_chunks = []
     movie_list = ""
     for movie in response:
         movie_list = movie_list + \
             movie['title'] + " (" + movie['year'] + \
             "), submitted by @" + movie['submitter'] + "\n"
-    await ctx.send("```" + "Unviewed Movies \n" + movie_list + "```")
+
+    # Break the list into chunks if it's too big (> 1900 chars)
+    print(len(movie_list))
+    n = 1900
+    if len(movie_list) > n:
+        movie_list_chunks = [movie_list[i:i+n] for i in range(0, len(movie_list), n)]
+    await ctx.send("```Unviewed Movies \n```")
+    if not movie_list_chunks:
+        await ctx.send("```" + movie_list + "```")
+    else:
+        for movie_list_chunk in movie_list_chunks:
+            await ctx.send("```" + movie_list_chunk + "```")
 
 
 @bot.command(name='viewedlist', help='Current watched movies.')
@@ -361,6 +373,7 @@ async def viewedlist(ctx):
     response = show_list(viewed=True)
     print(response)
     movie_list = ""
+    movie_list_chunks = []
     for movie in response:
         movie_list = movie_list + movie['title'] + " (" + movie['year'] + \
             "), submitted by @" + \
@@ -369,7 +382,17 @@ async def viewedlist(ctx):
     if movie_list == "":
         await ctx.send("No movies have been viewed yet.")
     else:
-        await ctx.send("```" + "Viewed Movies \n" + movie_list + "```")
+         # Break the list into chunks if it's too big (> 1900 chars)
+        print(len(movie_list))
+        n = 1900
+        if len(movie_list) > n:
+            movie_list_chunks = [movie_list[i:i+n] for i in range(0, len(movie_list), n)]
+        await ctx.send("```Viewed Movies \n```")
+        if not movie_list_chunks:
+            await ctx.send("```" + movie_list + "```")
+        else:
+            for movie_list_chunk in movie_list_chunks:
+                await ctx.send("```" + movie_list_chunk + "```")
 
 
 @bot.command(name='setviewed', help='Put movie in viewed list. IMDB link or title accepted. Title must be in quotes.')

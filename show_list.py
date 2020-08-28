@@ -7,6 +7,4 @@ import config
 
 
 def show_list(viewed):
-    for post in config.collection.find({"viewed": viewed}):
-        print(post)
     return config.collection.find({"viewed": viewed})
