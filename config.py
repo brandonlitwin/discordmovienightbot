@@ -10,7 +10,7 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 CHANNEL = os.getenv('CHANNEL_ID')
 SERVER = os.getenv('SERVER_ID')
 
-CONNECTION_STRING = 'mongodb+srv://dbUser:buttz@cluster0.gnabp.mongodb.net/movies?retryWrites=true&w=majority'
+CONNECTION_STRING = 'localhost'
 
 cluster = MongoClient(CONNECTION_STRING)
 db = cluster["MovieNightBot"]
