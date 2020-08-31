@@ -8,7 +8,7 @@ def create_poll(num_minutes):
     all_movies = config.collection.find({"viewed": False})
 
     for movie in config.collection.find({"viewed": False}):
-        current_movie_str = str(movie['title']) + \
+        current_movie_str = str(movie['Title']) + \
             " (https://imdb.com/title/" + str(movie['imdbID']) + \
             "), submitted by @" + str(movie['submitter']) + "\n"
         unviewed_movies.append(current_movie_str)
@@ -48,7 +48,7 @@ def poll_to_dict(poll_str):
     poll_dict = {}
     movie_list = list(filter(bool, poll_str.splitlines()))
     for movie in movie_list:
-        poll_dict[str(movie.split(')')[0])] = {'title':
+        poll_dict[str(movie.split(')')[0])] = {'Title':
                                                movie.split('(')[0].split(')')[
                                                    1].strip(),
                                                'votes': 0}

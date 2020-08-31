@@ -6,14 +6,15 @@ config.collection.drop()
 print('collection dropped')
 
 test_movie = {"imdbID": 'tt1234567',
-              "title": 'Test',
-              "year": '1999',
+              "Title": 'Test',
+              "Released": '1999',
               "rtScore": '9.0',
-              "runtime": '120',
-              "plot": 'Cool movie',
+              "Runtime": '120',
+              "Plot": 'Cool movie',
               "submitter": 'Me',
               "viewed": False,
-              "viewedDate": None}
+              "viewedDate": None,
+              "Poster": "http://google.com/"}
 test = config.collection.insert_one(test_movie)
 print(test.inserted_id)
 

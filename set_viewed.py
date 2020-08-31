@@ -12,4 +12,4 @@ def set_viewed_by_id(imdb_id):
 
 
 def set_viewed_by_title(title):
-    return config.collection.find_one_and_update({"title": title}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})
+    return config.collection.find_one_and_update({"Title": title}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})

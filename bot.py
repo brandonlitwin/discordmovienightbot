@@ -1,17 +1,18 @@
 # bot.py
 import config
 import datetime
-from datetime import datetime
 import os
 import discord
 import asyncio
 from dotenv import load_dotenv
 from discord.ext import commands, tasks
+from discord import Embed
 from update_list import add_movie_id, check_movie_id_in_list
 from update_list import check_movie_id_in_any_list, remove_movie_id
 from update_list import add_movie_title, check_movie_title_in_list
 from update_list import check_movie_title_in_any_list, remove_movie_title
 from update_list import search_movie_title
+from embed_builder import build_movie_embed
 from show_list import show_list
 from set_viewed import set_viewed_by_id, set_viewed_by_title
 from poll import create_poll, poll_to_dict, tiebreak
@@ -20,7 +21,7 @@ load_dotenv()
 
 client = discord.Client()
 
-bot = commands.Bot(command_prefix='--')
+bot = commands.Bot(command_prefix='!!')
 
 current_poll_dict = {}
 
@@ -74,7 +75,7 @@ async def autopoll():
     # get max value
     reformatted_dict = {}
     for key, val in current_poll_dict.items():
-        reformatted_dict[val['title']] = val['votes']
+        reformatted_dict[val['Title']] = val['votes']
     most_votes = max(reformatted_dict.values())
     keys = [key for key, value in reformatted_dict.items() if value == most_votes]
     import random
@@ -120,7 +121,7 @@ async def autopoll():
 
     # if autoview on, set winner to viewed
     if config.autoview:
-        config.collection.find_one_and_update({"title": winner}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})
+        config.collection.find_one_and_update({"Title": winner}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})
 
     await ctx.send("```" + poll_results + "```")
 
@@ -174,7 +175,7 @@ async def poll(ctx, num_minutes: int = 1440):
     # get max value
     reformatted_dict = {}
     for key, val in current_poll_dict.items():
-        reformatted_dict[val['title']] = val['votes']
+        reformatted_dict[val['Title']] = val['votes']
     most_votes = max(reformatted_dict.values())
     keys = [key for key, value in reformatted_dict.items() if value == most_votes]
     import random
@@ -220,9 +221,10 @@ async def poll(ctx, num_minutes: int = 1440):
 
     # if autoview on, set winner to viewed
     if config.autoview:
-        config.collection.find_one_and_update({"title": winner}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})
-
-    await ctx.send("```" + poll_results + "```")
+        config.collection.find_one_and_update({"Title": winner}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})
+    winning_movie = config.collection.find_one({"Title": winner})
+    embed = build_movie_embed(winning_movie, poll_results)
+    await ctx.send(embed = embed)
 
 
 @bot.command(name='schedule', help='Schedule poll')
@@ -243,7 +245,7 @@ async def schedule(ctx, datetime_str: str):
 async def vote(ctx, *picks):
     if not poll_running:
         response = "There is no poll active, sorry!"
-    elif ctx.author.name in users_who_voted:
+    elif ctx.author.mention in users_who_voted:
         response = f"You have already voted in this poll, {ctx.author.mention}."
     else:
         max_poll_id = len(current_poll_dict) + 1
@@ -267,7 +269,7 @@ async def vote(ctx, *picks):
                     current_poll_dict[third_pick]['votes'] = int(current_poll_dict[third_pick]['votes']) + 1
 
             response = f'Thank you for the vote {ctx.author.mention}.'
-            users_who_voted.append(ctx.author.name)
+            users_who_voted.append(ctx.author.mention)
             print(users_who_voted)
         else:
             response = f"Could not read any picks. Please try again, {ctx.author.mention}."
@@ -281,7 +283,7 @@ async def add(ctx, movie: str):
     if "imdb.com" in movie:
         imdb_id = movie.split("title/")[1].split("/")[0]
         if check_movie_id_in_list(imdb_id, viewed=False) is None:
-            if add_movie_id(imdb_id, ctx.author.name):
+            if add_movie_id(imdb_id, ctx.author.mention):
                 response = f"{movie} was added to the list."
             else:
                 response = f"{movie} could not be added, double check the URL."
@@ -290,10 +292,13 @@ async def add(ctx, movie: str):
     else:
         # add by title
         if check_movie_title_in_list(movie, viewed=False) is None:
-            found_link = search_movie_title(movie)
-            if found_link:
-                response = "Is this what you want to add?\n" + found_link
-                message = await ctx.send(response)
+            found_movie = search_movie_title(movie)
+            if found_movie:
+                # add rtScore value for ease of access and to mirror DB
+                found_movie['rtScore'] = found_movie["Ratings"][1]['Value']
+                found_movie['submitter'] = ctx.author.mention
+                embed = build_movie_embed(found_movie, "Is this the movie you were looking for?")
+                message = await ctx.send(embed=embed)
                 message_id = message.id
                 emojis = ['\U00002705', '\U0000274c']
                 for emoji in emojis:
@@ -307,8 +312,8 @@ async def add(ctx, movie: str):
                 print(reactions)
                 if reactions['\U00002705'] > reactions['\U0000274c']:
                     # Add movie as it was accepted by user
-                    if add_movie_title(movie, ctx.author.name):
-                        response = f"{movie} was added to the list."
+                    if add_movie_title(movie, ctx.author.mention):
+                        response = f"{movie} was added to the watchlist."
                     else:
                         response = "Movie could not be added. Please try again."
                 else:
@@ -327,7 +332,7 @@ async def bulkadd(ctx, *movies):
         if "imdb.com" in movie:
             imdb_id = movie.split("title/")[1].split("/")[0]
             if check_movie_id_in_list(imdb_id, viewed=False) is None:
-                if add_movie_id(imdb_id, ctx.author.name):
+                if add_movie_id(imdb_id, ctx.author.mention):
                     response += f"{movie} was added to the list.\n"
                 else:
                     response += f"{movie} could not be added, double check the URL.\n"
@@ -336,7 +341,7 @@ async def bulkadd(ctx, *movies):
         else:
             # add by title
             if check_movie_title_in_list(movie, viewed=False) is None:
-                if add_movie_title(movie, ctx.author.name):
+                if add_movie_title(movie, ctx.author.mention):
                     response += f"{movie} was added to the list.\n"
                 else:
                     response += f"{movie} could not be added. Double check the title or try adding an IMDB link.\n"
@@ -347,52 +352,48 @@ async def bulkadd(ctx, *movies):
 
 @bot.command(name='list', help='Current unwatched movies.')
 async def list(ctx):
+    embedded_messages = []
     response = show_list(viewed=False)
-    movie_list_chunks = []
+    embed = Embed(title = "Movie Watchlist")
     movie_list = ""
+    number = 1
     for movie in response:
-        movie_list = movie_list + \
-            movie['title'] + " (" + movie['year'] + \
-            "), submitted by @" + movie['submitter'] + "\n"
-
-    # Break the list into chunks if it's too big (> 1900 chars)
-    print(len(movie_list))
-    n = 1900
-    if len(movie_list) > n:
-        movie_list_chunks = [movie_list[i:i+n] for i in range(0, len(movie_list), n)]
-    await ctx.send("```Unviewed Movies \n```")
-    if not movie_list_chunks:
-        await ctx.send("```" + movie_list + "```")
-    else:
-        for movie_list_chunk in movie_list_chunks:
-            await ctx.send("```" + movie_list_chunk + "```")
+        string_build = f"""**[{number}.  {movie['Title']}](https://www.imdb.com/title/{movie['imdbID']})** submitted by {movie['submitter']}\n
+        **Release Date:** {movie['Released']} **Runtime:** {movie['Runtime']} **Rating:** {movie['rtScore']}\n\n"""
+        if len(movie_list) + len(string_build) > 2048:
+            embed.description = movie_list
+            embedded_messages.append(embed)
+            movie_list = ""
+            embed = Embed(title = "Submitted Movies (Cont...)")
+        movie_list += string_build
+        number += 1
+    embed.description = movie_list
+    embedded_messages.append(embed)
+    for message in embedded_messages:
+        await ctx.send(embed = message)
 
 
 @bot.command(name='viewedlist', help='Current watched movies.')
 async def viewedlist(ctx):
     response = show_list(viewed=True)
-    print(response)
+    embed = Embed(title = "Viewed Movies")
+    number = 1
     movie_list = ""
-    movie_list_chunks = []
+    embedded_messages = []
     for movie in response:
-        movie_list = movie_list + movie['title'] + " (" + movie['year'] + \
-            "), submitted by @" + \
-            movie['submitter'] + ", viewed on " + \
-            str(movie['viewedDate']).split(" ")[0] + "\n"
-    if movie_list == "":
-        await ctx.send("No movies have been viewed yet.")
-    else:
-         # Break the list into chunks if it's too big (> 1900 chars)
-        print(len(movie_list))
-        n = 1900
-        if len(movie_list) > n:
-            movie_list_chunks = [movie_list[i:i+n] for i in range(0, len(movie_list), n)]
-        await ctx.send("```Viewed Movies \n```")
-        if not movie_list_chunks:
-            await ctx.send("```" + movie_list + "```")
-        else:
-            for movie_list_chunk in movie_list_chunks:
-                await ctx.send("```" + movie_list_chunk + "```")
+        string_build = f"""**[{number}.  {movie['Title']}](https://www.imdb.com/title/{movie['imdbID']})** submitted by {movie['submitter']}\n
+        **Release Date:** {movie['Released']} **Runtime:** {movie['Runtime']} **Rating:** {movie['rtScore']} **Viewed on:** {movie['viewedDate'].strftime("%B %d %Y")}\n\n"""
+        if len(movie_list) + len(string_build) > 2048:
+            embed.description = movie_list
+            embedded_messages.append(embed)
+            movie_list = ""
+            embed = Embed(title = "Viewed Movies (Cont...)")
+        movie_list += string_build
+        number += 1
+    embed.description = movie_list
+    embedded_messages.append(embed)
+    for message in embedded_messages:
+        await ctx.send(embed = message)
 
 
 @bot.command(name='setviewed', help='Put movie in viewed list. IMDB link or title accepted. Title must be in quotes.')
