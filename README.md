@@ -5,8 +5,8 @@ Have you and your Discord buddies ever wanted to watch movies together, and keep
 This guide will outline the steps needed to run this bot on your local machine for use in your own Discord server.
 1. Clone this repo.
 1. Have [MongoDB](https://treehouse.github.io/installation-guides/windows/mongo-windows.html) installed on your local machine.
-1. Activate a python virtual env in your directory (not required but recommended).
-1. Install all python dependencies with `pip install -r requirements.txt`.
+1. Activate a Python 3 virtual env in your directory (not required but recommended).
+1. Install all Python dependencies with `pip install -r requirements.txt`.
 1. For first time setup, run `python create_db.py` to initialize the database. Make sure to have your Mongo client running first.
 1. [Register your bot](https://discordpy.readthedocs.io/en/latest/discord.html) through Discord and get a Discord token.
 1. Get an [OMDb API key](http://www.omdbapi.com/apikey.aspx)
