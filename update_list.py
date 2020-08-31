@@ -101,7 +101,8 @@ def remove_movie_title(title):
 
 
 def search_omdb_id(imdb_id):
-    url = 'http://www.omdbapi.com/?i=' + imdb_id + config.API_KEY
+    url = 'http://www.omdbapi.com/?i=' + imdb_id + "&apikey=" + config.API_KEY
+    print(url)
     r = requests.get(url=url)
     data = r.json()
     if data['Response'] == 'False':
@@ -111,7 +112,8 @@ def search_omdb_id(imdb_id):
 
 
 def search_omdb_title(title):
-    url = 'http://www.omdbapi.com/?t=' + title + config.API_KEY
+    url = 'http://www.omdbapi.com/?t=' + title + "&apikey=" + config.API_KEY
+    print(url)
     r = requests.get(url=url)
     data = r.json()
     if data['Response'] == 'False':
