@@ -21,7 +21,7 @@ load_dotenv()
 
 client = discord.Client()
 
-bot = commands.Bot(command_prefix='!!')
+bot = commands.Bot(command_prefix='!')
 
 current_poll_dict = {}
 
@@ -154,18 +154,17 @@ async def poll(ctx, num_minutes: int = 1440):
     await ctx.send(response)
 
     # get all the movies of the poll
-    response = create_poll(num_minutes)
+    response, movie_map = create_poll(num_minutes)
+    for message in response:
+        await ctx.send(embed = message)
 
     # call function to convert str to dict
     global current_poll_dict
-    current_poll_dict = poll_to_dict(response)
-
-    # send poll
-    message = await ctx.send("```" + response + "```")
+    current_poll_dict = movie_map
+    print(current_poll_dict)
 
     # send results on poll end
     poll_time_seconds = num_minutes * 60
-    print(poll_time_seconds)
     await asyncio.sleep(poll_time_seconds)
 
     print("poll is done")
@@ -254,12 +253,13 @@ async def vote(ctx, *picks):
         for pick in picks:
             if 0 < int(pick) < max_poll_id:
                 if len(actual_picks) < 4:
-                    actual_picks.append(pick)
+                    actual_picks.append(int(pick))
 
         # Add votes of actual picks to totals
         num_picks = len(actual_picks)
         if num_picks > 0:
             first_pick = actual_picks[0]
+            print(current_poll_dict[first_pick])
             current_poll_dict[first_pick]['votes'] = int(current_poll_dict[first_pick]['votes']) + 3
             if num_picks > 1:
                 second_pick = actual_picks[1]
@@ -359,6 +359,7 @@ async def list(ctx):
     movie_list = ""
     number = 1
     for movie in response:
+        print(movie)
         string_build = f"""**[{number}.  {movie['Title']}](https://www.imdb.com/title/{movie['imdbID']})** submitted by {movie['submitter']}\n
         **Release Date:** {movie['Released']} **Runtime:** {movie['Runtime']} **Rating:** {movie['rtScore']}\n\n"""
         if len(movie_list) + len(string_build) > 2048:

@@ -1,35 +1,39 @@
 # poll.py
 import config
 import random
+from discord import Embed
 
 
 def create_poll(num_minutes):
-    unviewed_movies = []
-    all_movies = config.collection.find({"viewed": False})
+    all_movies = list(config.collection.find({"viewed": False}))
 
-    for movie in config.collection.find({"viewed": False}):
-        current_movie_str = str(movie['Title']) + \
-            " (https://imdb.com/title/" + str(movie['imdbID']) + \
-            "), submitted by @" + str(movie['submitter']) + "\n"
-        unviewed_movies.append(current_movie_str)
+    poll_list = []
+    movie_map = {}
 
-    poll_list = unviewed_movies
+    if len(all_movies) > 10:
+        poll_list = random.sample(all_movies, k=10)
+    
 
-    poll_list_with_indexes = []
+    embed = Embed(title = "The poll has begun!")
+    embedded_messages = []
+    movie_list = ""
+    number = 1
+    for movie in poll_list:
+        string_build = f"""**[{number}.  {movie['Title']}](https://www.imdb.com/title/{movie['imdbID']})** submitted by {movie['submitter']}\n
+        **Release Date:** {movie['Released']} **Runtime:** {movie['Runtime']} **Rating:** {movie['rtScore']}\n\n"""
+        if len(movie_list) + len(string_build) > 2048:
+            embed.description = movie_list
+            embedded_messages.append(embed)
+            movie_list = ""
+            embed = Embed(title = "Submitted Movies (Cont...)")
+        movie_list += string_build
+        movie['votes'] = 0
+        movie_map[number] = movie
+        number += 1
+    embed.description = movie_list
+    embedded_messages.append(embed)
 
-    if len(unviewed_movies) > 10:
-        poll_list = random.sample(unviewed_movies, k=10)
-
-    for index, movie in enumerate(poll_list, start=1):
-        current_movie_str = str(index) + ") " + movie
-        poll_list_with_indexes.append(current_movie_str)
-
-    poll_list_str = ""
-
-    for movie in poll_list_with_indexes:
-        poll_list_str += movie + "\n"
-
-    return poll_list_str
+    return embedded_messages, movie_map
 
 
 def tiebreak(movies):
