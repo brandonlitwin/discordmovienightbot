@@ -277,7 +277,8 @@ async def vote(ctx, *picks):
 
 
 @bot.command(name='add', help='Add movie to the watch list. IMDB link or title accepted. Title must be in quotes.')
-async def add(ctx, movie: str):
+async def add(ctx, *args):
+    movie = ' '.join(args)
     if "imdb.com" in movie:
         imdb_id = movie.split("title/")[1].split("/")[0]
         if check_movie_id_in_list(imdb_id, viewed=False) is None:
