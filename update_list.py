@@ -20,14 +20,14 @@ def check_movie_id_in_any_list(imdb_id):
 
 def check_movie_title_in_list(title, viewed):
     print(title)
-    print(config.collection.find_one({"title": title, "viewed": viewed}))
-    return config.collection.find_one({"title": title, "viewed": viewed})
+    print(config.collection.find_one({"Title": title, "viewed": viewed}))
+    return config.collection.find_one({"Title": title, "viewed": viewed})
 
 
 def check_movie_title_in_any_list(title):
     print(title)
-    print(config.collection.find_one({"title": title}))
-    return config.collection.find_one({"title": title})
+    print(config.collection.find_one({"Title": title}))
+    return config.collection.find_one({"Title": title})
 
 
 def add_movie_id(imdb_id, submitter):
@@ -42,14 +42,15 @@ def add_movie_id(imdb_id, submitter):
         except IndexError:
             rating = "n/a"
         post = {"imdbID": imdb_id,
-                "title": data['Title'],
-                "year": data['Year'],
+                "Title": data['Title'],
+                "Released": data['Year'],
                 "rtScore": rating,
-                "runtime": data['Runtime'],
-                "plot": data['Plot'],
+                "Runtime": data['Runtime'],
+                "Plot": data['Plot'],
                 "submitter": submitter,
                 "viewed": False,
-                "viewedDate": None}
+                "viewedDate": None,
+                "Poster": data['Poster']}
         config.collection.insert_one(post)
         return True
     else:
@@ -58,12 +59,7 @@ def add_movie_id(imdb_id, submitter):
 
 def search_movie_title(title):
     data = search_omdb_title(title)
-    print(data)
-    if data:
-        link = "https://www.imdb.com/title/" + data['imdbID']
-        return link
-    else:
-        return False
+    return data
 
 
 def add_movie_title(title, submitter):
@@ -78,14 +74,15 @@ def add_movie_title(title, submitter):
         except IndexError:
             rating = "n/a"
         post = {"imdbID": data['imdbID'],
-                "title": data['Title'],
-                "year": data['Year'],
+                "Title": data['Title'],
+                "Released": data['Year'],
                 "rtScore": rating,
-                "runtime": data['Runtime'],
-                "plot": data['Plot'],
+                "Runtime": data['Runtime'],
+                "Plot": data['Plot'],
                 "submitter": submitter,
                 "viewed": False,
-                "viewedDate": None}
+                "viewedDate": None,
+                "Poster": data['Poster']}
         config.collection.insert_one(post)
         return True
     else:
