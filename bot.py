@@ -129,9 +129,11 @@ async def autopoll():
 @autopoll.before_loop
 async def wait_to_start_autopoll():
     print('before loop')
-    print(config.autopoll_schedule, datetime.now().replace(microsecond=0))
-    print(datetime.now().replace(microsecond=0) >= config.autopoll_schedule)
-    time_diff = config.autopoll_schedule - datetime.now().replace(microsecond=0)
+    import pytz
+    utc_now = pytz.utc.localize(datetime.datetime.utcnow())
+    current_time_str = utc_now
+    print(config.autopoll_schedule, current_time_str)
+    time_diff = config.autopoll_schedule - current_time_str
     print(time_diff.total_seconds())
     if time_diff.total_seconds() > 0:
         await asyncio.sleep(time_diff.total_seconds())
@@ -230,10 +232,17 @@ async def poll(ctx, num_minutes: int = 1440):
 @bot.command(name='schedule', help='Schedule poll')
 async def schedule(ctx, datetime_str: str):
     from dateutil.parser import parse
-    datetime = parse(datetime_str)
-    message = f"Poll is scheduled for {datetime}"
+    from dateutil.tz import UTC
+    schedule_datetime = parse(datetime_str)
+    message = f"Poll is scheduled for {schedule_datetime}"
+    #datetime = datetime.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
+    schedule_datetime = schedule_datetime.astimezone(UTC)
+    print(schedule_datetime, type(schedule_datetime))
+    #schedule_datetime = datetime.datetime.strptime(schedule_datetime, '%Y-%m-%d %H:%M:%S')
+    #datetime = parse(datetime)
+    #print(schedule_datetime, type(schedule_datetime))
     await ctx.send("```" + message + "```")
-    config.autopoll_schedule = datetime
+    config.autopoll_schedule = schedule_datetime
     print(config.autopoll_schedule)
     print('autopoll start')
     autopoll.start()
