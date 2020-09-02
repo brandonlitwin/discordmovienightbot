@@ -21,7 +21,7 @@ load_dotenv()
 
 client = discord.Client()
 
-bot = commands.Bot(command_prefix='!!')
+bot = commands.Bot(command_prefix='!')
 
 current_poll_dict = {}
 
