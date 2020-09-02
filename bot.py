@@ -235,12 +235,8 @@ async def schedule(ctx, datetime_str: str):
     from dateutil.tz import UTC
     schedule_datetime = parse(datetime_str)
     message = f"Poll is scheduled for {schedule_datetime}"
-    #datetime = datetime.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S")
     schedule_datetime = schedule_datetime.astimezone(UTC)
     print(schedule_datetime, type(schedule_datetime))
-    #schedule_datetime = datetime.datetime.strptime(schedule_datetime, '%Y-%m-%d %H:%M:%S')
-    #datetime = parse(datetime)
-    #print(schedule_datetime, type(schedule_datetime))
     await ctx.send("```" + message + "```")
     config.autopoll_schedule = schedule_datetime
     print(config.autopoll_schedule)
