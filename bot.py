@@ -281,7 +281,16 @@ async def vote(ctx, *picks):
 
     await ctx.send(response)
     print(current_poll_dict)
-
+    # get highest 3 votes
+    reformatted_dict = {}
+    for key, val in current_poll_dict.items():
+        reformatted_dict[val['Title']] = val['votes']
+    sorted_dict = sorted(reformatted_dict.items(), key=lambda x: x[1], reverse=True)
+    embed = Embed(title='Poll Status')
+    embed.add_field(name=f"{sorted_dict[0][0]}", value=f"{sorted_dict[0][1]} votes", inline=True)
+    embed.add_field(name=f"{sorted_dict[1][0]}", value=f"{sorted_dict[1][1]} votes", inline=True)
+    embed.add_field(name=f"{sorted_dict[2][0]}", value=f"{sorted_dict[2][1]} votes", inline=True)
+    response = await ctx.send(embed=embed)
 
 @bot.command(name='add', help='Add movie to the watch list. IMDB link or title accepted. Title must be in quotes.')
 async def add(ctx, *args):
