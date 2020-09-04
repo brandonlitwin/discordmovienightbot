@@ -50,7 +50,7 @@ async def autopoll():
     response = f'Setting a poll for {num_minutes} minutes'
 
     # send initial message
-    response += "\n @everyone poll is starting, use vote command to vote"
+    response += "\n @everyone poll is starting"
     await ctx.send(response)
 
     # get all the movies of the poll
@@ -63,22 +63,71 @@ async def autopoll():
     # send poll
     message = await ctx.send("```" + response + "```")
 
+    # Create 3 messages with reactions
+    emojis = ['1\u20E3', '2\u20E3', '3\u20E3', '4\u20E3', '5\u20E3',
+              '6\u20E3', '7\u20E3', '8\u20E3', '9\u20E3', '\U0001f51f']
+    movie_title_to_emoji = {}
+    reformatted_dict = {}
+    for key, val in current_poll_dict.items():
+        reformatted_dict[val['Title']] = val['votes']   
+    movie_titles_in_poll = list(reformatted_dict.keys())
+    # Create hashmap of movie titles to emojis
+    for emoji in emojis:
+        movie_title_to_emoji[emoji] = movie_titles_in_poll[emojis.index(emoji)]
+
+    print(movie_title_to_emoji)
+
+    first_picks_message = await ctx.send("First Pick worth 3 votes (react below)")
+    second_picks_message = await ctx.send("Second Pick worth 2 votes (react below)")
+    third_picks_message = await ctx.send("Third Pick worth 1 vote (react below)")
+    first_picks_message_id = first_picks_message.id
+    second_picks_message_id = second_picks_message.id
+    third_picks_message_id = third_picks_message.id
+    for emoji in emojis:
+        await first_picks_message.add_reaction(emoji)
+        await second_picks_message.add_reaction(emoji)
+        await third_picks_message.add_reaction(emoji)
+
     # send results on poll end
     poll_time_seconds = num_minutes * 60
     print(poll_time_seconds)
     await asyncio.sleep(poll_time_seconds)
 
+    # Create dict of all reactions on each message
+    first_picks_reactions = {}
+    second_picks_reactions = {}
+    third_picks_reactions = {}
+    first_picks_message = await ctx.fetch_message(first_picks_message_id)
+    second_picks_message = await ctx.fetch_message(second_picks_message_id)
+    third_picks_message = await ctx.fetch_message(third_picks_message_id)
+    for reaction in first_picks_message.reactions:
+        first_picks_reactions[reaction.emoji] = reaction.count - 1  # subtract 1 because that's the bot's reaction
+    for reaction in second_picks_message.reactions:
+        second_picks_reactions[reaction.emoji] = reaction.count - 1
+    for reaction in third_picks_message.reactions:
+        third_picks_reactions[reaction.emoji] = reaction.count - 1
+
+    # Count total votes
+    total_votes = {}
+    for reaction in first_picks_reactions.keys():
+        total_votes[movie_title_to_emoji[reaction]] = first_picks_reactions[reaction] * 3 + second_picks_reactions[reaction] * 2 + third_picks_reactions[reaction]
+
+    # get highest vote
+    print(total_votes)
+    most_votes = max(total_votes.values())
+    keys = [key for key, value in total_votes.items() if value == most_votes]
+
     print("poll is done")
     poll_running = False
     users_who_voted.clear()
 
-    # get max value
+    """# get max value
     reformatted_dict = {}
     for key, val in current_poll_dict.items():
         reformatted_dict[val['Title']] = val['votes']
     most_votes = max(reformatted_dict.values())
     keys = [key for key, value in reformatted_dict.items() if value == most_votes]
-    import random
+    import random"""
     if len(keys) > 1:
         emojis = ['1\u20E3', '2\u20E3', '3\u20E3', '4\u20E3', '5\u20E3',
                 '6\u20E3', '7\u20E3', '8\u20E3', '9\u20E3', '\U0001f51f']
