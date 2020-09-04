@@ -389,7 +389,8 @@ async def vote(ctx, *picks):
     embed.add_field(name=f"{sorted_dict[2][0]}", value=f"{sorted_dict[2][1]} votes", inline=True)
     response = await ctx.send(embed=embed)"""
 
-@bot.command(name='add', help='Add movie to the watch list. IMDB link or title accepted. Title must be in quotes.')
+
+@bot.command(name='add', help='Add movie to the watch list. IMDB link or title accepted.')
 async def add(ctx, *args):
     movie = ' '.join(args)
     if "imdb.com" in movie:
@@ -437,7 +438,7 @@ async def add(ctx, *args):
     await ctx.send(response)
 
 
-@bot.command(name='bulkadd', help='Add group of movies. IMDB links or titles accepted. Titles must be in quotes.')
+@bot.command(name='bulkadd', help='Add group of movies. IMDB links or titles accepted.')
 async def bulkadd(ctx, *movies):
     response = ""
     for movie in movies:
@@ -508,7 +509,7 @@ async def getviewed(ctx):
         await ctx.send(embed = message)
 
 
-@bot.command(name='setviewed', help='Put movie in viewed list. IMDB link or title accepted. Title must be in quotes.')
+@bot.command(name='setviewed', help='Put movie in viewed list. IMDB link or title accepted.')
 async def setviewed(ctx, movie):
     if "imdb.com" in movie:
         imdb_id = movie.split("title/")[1].split("/")[0]
@@ -532,7 +533,7 @@ async def setviewed(ctx, movie):
     await ctx.send(response)
 
 
-@bot.command(name='remove', help='Remove from watch list. IMDB links or titles accepted. Title must be in quotes.')
+@bot.command(name='remove', help='Remove from watch list. IMDB links or titles accepted.')
 async def remove(ctx, movie: str):
     if "imdb.com" in movie:
         imdb_id = movie.split("title/")[1].split("/")[0]
