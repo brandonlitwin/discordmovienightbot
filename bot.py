@@ -269,13 +269,12 @@ async def poll(ctx, num_minutes: int = 1440):
         poll_results = "Poll is now completed \n" + f"Winner is {winner}" + \
         f" with {most_votes} votes!"
 
-    """# if autoview on, set winner to viewed
+    # if autoview on, set winner to viewed
     if config.autoview:
         config.collection.find_one_and_update({"Title": winner}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})
     winning_movie = config.collection.find_one({"Title": winner})
     embed = build_movie_embed(winning_movie, poll_results)
-    await ctx.send(embed=embed)"""
-    await ctx.send(poll_results)
+    await ctx.send(embed=embed)
 
 
 @bot.command(name='schedule', help='Schedule poll')
