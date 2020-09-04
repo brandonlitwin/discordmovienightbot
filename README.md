@@ -23,9 +23,9 @@ The command prefix is the symbol before a command in a Discord message that will
 ## Command List
 At any time, you can type the **help** command in your Discord channel with the bot running to display these commands.
 
-**add** - Add movie to the watch list. IMDB link or title accepted. Title must be in quotes.
+**add** - Add movie to the watch list. IMDB link or title accepted.
 
-**bulkadd** - Add group of movies. IMDB links or titles accepted. Titles must be in quotes.
+**bulkadd** - Add group of movies. IMDB links or titles accepted.
 
 **get** - Print a list of current unwatched movies.
 
@@ -33,11 +33,11 @@ At any time, you can type the **help** command in your Discord channel with the 
 
 **poll** - Select 10 random movies and create a poll. Default time is 1440 min (24 hours). In the case of a tie of votes, the poll will create a tiebreaker between the tied movies. The default tiebreak poll length is 5 minutes (300 seconds), which can be modified in `config.py` - `tiebreak_num_seconds`. If this leads to another tie, the bot will select a random movie of the tied movies.
 
-**remove** - Remove from watch list. IMDB links or titles accepted. Title must be in quotes.
+**remove** - Remove from watch list. IMDB links or titles accepted.
 
 **schedule** - Schedule the autopoll, which will take a datetime and automatically start a poll at that time in your channel. Ex: `Monday 12pm` will schedule a poll for next Monday at noon. Every time the bot is turned off, the autopoll will have to be rescheduled, as it will be set to its default value of '2000-01-01 12:00:00' which is also configurable in `config.py`.
 
-**setviewed** - Put movie in viewed list. IMDB link or title accepted. Title must be in quotes. Basically the manual version of `autoview`.
+**setviewed** - Put movie in viewed list. IMDB link or title accepted. Basically the manual version of `autoview`.
 
 **toggleautoview** - Toggle autoview of movies after poll is done. Default value is `True`, which can be modified in `config.py`
 
