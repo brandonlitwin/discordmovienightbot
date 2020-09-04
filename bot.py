@@ -168,9 +168,20 @@ async def poll(ctx, num_minutes: int = 1440):
     # Create 3 messages with reactions
     emojis = ['1\u20E3', '2\u20E3', '3\u20E3', '4\u20E3', '5\u20E3',
               '6\u20E3', '7\u20E3', '8\u20E3', '9\u20E3', '\U0001f51f']
-    first_picks_message = await ctx.send("First Pick (react below)")
-    second_picks_message = await ctx.send("Second Pick (react below)")
-    third_picks_message = await ctx.send("Third Pick (react below)")
+    movie_title_to_emoji = {}
+    reformatted_dict = {}
+    for key, val in current_poll_dict.items():
+        reformatted_dict[val['Title']] = val['votes']   
+    movie_titles_in_poll = list(reformatted_dict.keys())
+    # Create hashmap of movie titles to emojis
+    for emoji in emojis:
+        movie_title_to_emoji[emoji] = movie_titles_in_poll[emojis.index(emoji)]
+
+    print(movie_title_to_emoji)
+
+    first_picks_message = await ctx.send("First Pick worth 3 votes (react below)")
+    second_picks_message = await ctx.send("Second Pick worth 2 votes (react below)")
+    third_picks_message = await ctx.send("Third Pick worth 1 vote (react below)")
     first_picks_message_id = first_picks_message.id
     second_picks_message_id = second_picks_message.id
     third_picks_message_id = third_picks_message.id
@@ -201,15 +212,12 @@ async def poll(ctx, num_minutes: int = 1440):
     # Count total votes
     total_votes = {}
     for reaction in first_picks_reactions.keys():
-        total_votes[reaction] = first_picks_reactions[reaction] * 3 + second_picks_reactions[reaction] * 2 + third_picks_reactions[reaction]
+        total_votes[movie_title_to_emoji[reaction]] = first_picks_reactions[reaction] * 3 + second_picks_reactions[reaction] * 2 + third_picks_reactions[reaction]
 
     # get highest vote
+    print(total_votes)
     most_votes = max(total_votes.values())
     keys = [key for key, value in total_votes.items() if value == most_votes]
-    winner = keys[0]
-    print(winner)
-    poll_results = "Poll is now completed \n" + f"Winner is {winner}" + \
-        f" with {most_votes} votes!"
     print("poll is done")
     poll_running = False
     users_who_voted.clear()
@@ -406,8 +414,8 @@ async def bulkadd(ctx, *movies):
     await ctx.send(response)
 
 
-@bot.command(name='list', help='Current unwatched movies.')
-async def list(ctx):
+@bot.command(name='get', help='Current unwatched movies.')
+async def get(ctx):
     embedded_messages = []
     response = show_list(viewed=False)
     embed = Embed(title = "Movie Watchlist")
@@ -429,8 +437,8 @@ async def list(ctx):
         await ctx.send(embed = message)
 
 
-@bot.command(name='viewedlist', help='Current watched movies.')
-async def viewedlist(ctx):
+@bot.command(name='getviewed', help='Current watched movies.')
+async def getviewed(ctx):
     response = show_list(viewed=True)
     embed = Embed(title = "Viewed Movies")
     number = 1
