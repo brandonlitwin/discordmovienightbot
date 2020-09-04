@@ -174,6 +174,15 @@ async def autopoll():
 
     await ctx.send("```" + poll_results + "```")
 
+    # Send full voting results
+    embed = Embed(title='Full Results')
+    print(total_votes)
+    total_votes = sorted(total_votes.items(), key=lambda x: x[1], reverse=True)
+    print(total_votes)
+    for movie in total_votes:
+        embed.add_field(name=movie[0], value=f"{movie[1]} votes", inline=False)
+    await ctx.send(embed=embed)
+
 
 @autopoll.before_loop
 async def wait_to_start_autopoll():
@@ -323,6 +332,15 @@ async def poll(ctx, num_minutes: int = 1440):
         config.collection.find_one_and_update({"Title": winner}, {'$set': {'viewed': True, 'viewedDate': datetime.datetime.utcnow()}})
     winning_movie = config.collection.find_one({"Title": winner})
     embed = build_movie_embed(winning_movie, poll_results)
+    await ctx.send(embed=embed)
+
+    # Send full voting results
+    embed = Embed(title='Full Results')
+    print(total_votes)
+    total_votes = sorted(total_votes.items(), key=lambda x: x[1], reverse=True)
+    print(total_votes)
+    for movie in total_votes:
+        embed.add_field(name=movie[0], value=f"{movie[1]} votes", inline=False)
     await ctx.send(embed=embed)
 
 
