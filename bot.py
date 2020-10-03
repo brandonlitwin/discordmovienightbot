@@ -565,13 +565,18 @@ async def setviewed(ctx, *args):
             response = "Movie is already in viewed list."
     else:
         # Set viewed by title
-        if check_movie_title_in_any_list(movie) is None:
-            response = "Can't set movie to viewed. If it is in the unviewed list, try checking spelling with exact quotes or try IMDB link."
-        elif check_movie_title_in_list(movie, viewed=True) is None:
-            set_viewed_by_title(movie)
-            response = "Movie was added to the viewed list."
+        found_movie = search_movie_title(movie)
+        print(found_movie)
+        if found_movie:
+            if check_movie_id_in_any_list(found_movie['imdbID']) is None:
+                response = f"Can't set {found_movie['Title']} (https://imdb.com/title/{found_movie['imdbID']}) to viewed, not in watchlist."
+            elif check_movie_id_in_list(found_movie['imdbID'], viewed=True) is None:
+                set_viewed_by_id(found_movie['imdbID'])
+                response = f"{found_movie['Title']} was added to the viewed list."
+            else:
+                response = f"{found_movie['Title']} is already in viewed list."
         else:
-            response = "Movie is already in viewed list."
+            response = f"Could not find {movie} in list."
 
     await ctx.send(response)
 
