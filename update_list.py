@@ -62,6 +62,11 @@ def search_movie_title(title):
     return data
 
 
+def search_movie_id(id):
+    data = search_omdb_id(id)
+    return data
+
+
 def add_movie_title(title, submitter):
     data = search_omdb_title(title)
     print(data)

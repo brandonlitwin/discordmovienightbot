@@ -11,7 +11,7 @@ from update_list import add_movie_id, check_movie_id_in_list
 from update_list import check_movie_id_in_any_list, remove_movie_id
 from update_list import add_movie_title, check_movie_title_in_list
 from update_list import check_movie_title_in_any_list, remove_movie_title
-from update_list import search_movie_title
+from update_list import search_movie_title, search_movie_id
 from embed_builder import build_movie_embed
 from show_list import show_list
 from set_viewed import set_viewed_by_id, set_viewed_by_title
@@ -583,14 +583,23 @@ async def remove(ctx, *args):
         imdb_id = movie.split("title/")[1].split("/")[0]
         if check_movie_id_in_list(imdb_id, viewed=False):
             remove_movie_id(imdb_id)
-            response = f"{movie} was removed from the list."
+            # get movie title from id
+            found_movie = search_movie_id(imdb_id)
+            if found_movie:
+                response = f"{found_movie['Title']} was removed from the list."
+            else:
+                response = f"{movie} was removed from the list."
         else:
             response = "Movie could not be removed. IMDB id was not found in the list."
     else:
         # Remove by title
-        if check_movie_title_in_list(movie, viewed=False):
-            remove_movie_title(movie)
-            response = f"{movie} was removed from the list."
+        found_movie = search_movie_title(movie)
+        if found_movie:
+            if check_movie_id_in_list(found_movie['imdbID'], viewed=False):
+                remove_movie_id(found_movie['imdbID'])
+                response = f"{found_movie['Title']} was removed from the list."
+            else:
+                response = f"Tried to remove {found_movie['Title']} (https://imdb.com/title/{found_movie['imdbID']}), could not find in list. Try more exact title or IMDB link."
         else:
             response = "Movie could not be removed. Double check the title in the list."
     await ctx.send(response)
