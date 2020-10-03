@@ -15,7 +15,7 @@ from update_list import search_movie_title
 from embed_builder import build_movie_embed
 from show_list import show_list
 from set_viewed import set_viewed_by_id, set_viewed_by_title
-from poll import create_poll, poll_to_dict, tiebreak
+from poll import create_poll, poll_to_dict, tiebreak, poll_to_dict_for_voting
 
 load_dotenv()
 
@@ -61,7 +61,16 @@ async def autopoll():
     current_poll_dict = poll_to_dict(response)
 
     # send poll
-    message = await ctx.send("```" + response + "```")
+    embed = Embed(title='Poll')
+    number = 1
+    movie_list = ""
+    voting_poll_dict = poll_to_dict_for_voting(response)
+    for movie in voting_poll_dict.items():
+        string_build = f"""**[{movie[0]}.  {movie[1]['Title']}]({movie[1]['link']})** submitted by {movie[1]['submitter']}\n"""
+        movie_list += string_build
+        embed.description = movie_list
+
+    message = await ctx.send(embed=embed)
 
     # Create 3 messages with reactions
     emojis = ['1\u20E3', '2\u20E3', '3\u20E3', '4\u20E3', '5\u20E3',
@@ -221,7 +230,16 @@ async def poll(ctx, num_minutes: int = 1440):
     current_poll_dict = poll_to_dict(response)
 
     # send poll
-    message = await ctx.send("```" + response + "```")
+    embed = Embed(title='Poll')
+    number = 1
+    movie_list = ""
+    voting_poll_dict = poll_to_dict_for_voting(response)
+    for movie in voting_poll_dict.items():
+        string_build = f"""**[{movie[0]}.  {movie[1]['Title']}]({movie[1]['link']})** submitted by {movie[1]['submitter']}\n"""
+        movie_list += string_build
+        embed.description = movie_list
+
+    message = await ctx.send(embed=embed)
 
     # Create 3 messages with reactions
     emojis = ['1\u20E3', '2\u20E3', '3\u20E3', '4\u20E3', '5\u20E3',
