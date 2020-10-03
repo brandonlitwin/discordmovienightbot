@@ -52,7 +52,7 @@ def add_movie_id(imdb_id, submitter):
                 "viewedDate": None,
                 "Poster": data['Poster']}
         config.collection.insert_one(post)
-        return True
+        return data['Title']
     else:
         return False
 
@@ -84,7 +84,7 @@ def add_movie_title(title, submitter):
                 "viewedDate": None,
                 "Poster": data['Poster']}
         config.collection.insert_one(post)
-        return True
+        return data['Title']
     else:
         return False
 

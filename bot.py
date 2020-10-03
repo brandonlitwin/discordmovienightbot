@@ -432,8 +432,9 @@ async def add(ctx, *args):
     if "imdb.com" in movie:
         imdb_id = movie.split("title/")[1].split("/")[0]
         if check_movie_id_in_list(imdb_id, viewed=False) is None:
-            if add_movie_id(imdb_id, ctx.author.mention):
-                response = f"{movie} was added to the list."
+            movie_found = add_movie_id(imdb_id, ctx.author.mention)
+            if movie_found is not False:
+                response = f"{movie_found} was added to the list."
             else:
                 response = f"{movie} could not be added, double check the URL."
         else:
@@ -461,8 +462,9 @@ async def add(ctx, *args):
                 print(reactions)
                 if reactions['\U00002705'] > reactions['\U0000274c']:
                     # Add movie as it was accepted by user
-                    if add_movie_title(movie, ctx.author.mention):
-                        response = f"{movie} was added to the watchlist."
+                    movie_found = add_movie_title(movie, ctx.author.mention)
+                    if movie_found is not False:
+                        response = f"{movie_found} was added to the list."
                     else:
                         response = "Movie could not be added. Please try again."
                 else:
