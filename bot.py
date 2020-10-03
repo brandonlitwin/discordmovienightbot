@@ -476,15 +476,18 @@ async def add(ctx, *args):
     await ctx.send(response)
 
 
-@bot.command(name='bulkadd', help='Add group of movies. IMDB links or titles accepted.')
-async def bulkadd(ctx, *movies):
+@bot.command(name='bulkadd', help='Add group of movies, each separated by a ",". IMDB links or titles accepted.')
+async def bulkadd(ctx, *args):
+    movies = list(filter(bool, ' '.join(args).strip().split(',')))
+    print(movies)
     response = ""
     for movie in movies:
         if "imdb.com" in movie:
             imdb_id = movie.split("title/")[1].split("/")[0]
             if check_movie_id_in_list(imdb_id, viewed=False) is None:
-                if add_movie_id(imdb_id, ctx.author.mention):
-                    response += f"{movie} was added to the list.\n"
+                movie_found = add_movie_id(imdb_id, ctx.author.mention)
+                if movie_found is not False:
+                    response += f"{movie_found} was added to the list.\n"
                 else:
                     response += f"{movie} could not be added, double check the URL.\n"
             else:
@@ -492,8 +495,9 @@ async def bulkadd(ctx, *movies):
         else:
             # add by title
             if check_movie_title_in_list(movie, viewed=False) is None:
-                if add_movie_title(movie, ctx.author.mention):
-                    response += f"{movie} was added to the list.\n"
+                movie_found = add_movie_title(movie, ctx.author.mention)
+                if movie_found is not False:
+                    response += f"{movie_found} was added to the list.\n"
                 else:
                     response += f"{movie} could not be added. Double check the title or try adding an IMDB link.\n"
             else:
@@ -548,7 +552,8 @@ async def getviewed(ctx):
 
 
 @bot.command(name='setviewed', help='Put movie in viewed list. IMDB link or title accepted.')
-async def setviewed(ctx, movie):
+async def setviewed(ctx, *args):
+    movie = ' '.join(args)
     if "imdb.com" in movie:
         imdb_id = movie.split("title/")[1].split("/")[0]
         if check_movie_id_in_any_list(imdb_id) is None:
@@ -572,19 +577,20 @@ async def setviewed(ctx, movie):
 
 
 @bot.command(name='remove', help='Remove from watch list. IMDB links or titles accepted.')
-async def remove(ctx, movie: str):
+async def remove(ctx, *args):
+    movie = ' '.join(args)
     if "imdb.com" in movie:
         imdb_id = movie.split("title/")[1].split("/")[0]
         if check_movie_id_in_list(imdb_id, viewed=False):
             remove_movie_id(imdb_id)
-            response = "Movie was removed from the list."
+            response = f"{movie} was removed from the list."
         else:
             response = "Movie could not be removed. IMDB id was not found in the list."
     else:
         # Remove by title
         if check_movie_title_in_list(movie, viewed=False):
             remove_movie_title(movie)
-            response = "Movie was removed from the list."
+            response = f"{movie} was removed from the list."
         else:
             response = "Movie could not be removed. Double check the title in the list."
     await ctx.send(response)
