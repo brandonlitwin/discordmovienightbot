@@ -445,7 +445,10 @@ async def add(ctx, *args):
             found_movie = search_movie_title(movie)
             if found_movie:
                 # add rtScore value for ease of access and to mirror DB
-                found_movie['rtScore'] = found_movie["Ratings"][1]['Value']
+                if len(found_movie["Ratings"]) > 1:
+                    found_movie['rtScore'] = found_movie["Ratings"][1]['Value']
+                else:
+                    found_movie['rtScore'] = "N/A"
                 found_movie['submitter'] = ctx.author.mention
                 embed = build_movie_embed(found_movie, "Is this the movie you were looking for?")
                 message = await ctx.send(embed=embed)
